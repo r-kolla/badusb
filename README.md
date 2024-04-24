@@ -1,4 +1,4 @@
-# badusb
+# badusb: Brute-force Attacker
 This is a keystroke injector made using Pro Micro chip to crack passwords.
 A badusb uses brute force and dictionary attack to penetrate internet accounts, files, folders and other sensitive data. It uses pydictor to Social Engineer user passwords.
 

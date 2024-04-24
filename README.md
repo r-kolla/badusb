@@ -1,6 +1,7 @@
 # badusb
 This is a keystroke injector made using Pro Micro chip to crack passwords.
 A badusb uses brute force and dictionary attack to penetrate internet accounts, files, folders and other sensitive data. It uses pydictor to Social Engineer user passwords.
+
 Link to install pydictor: https://github.com/LandGrey/pydictor
 
 Make sure your wordlist and python script are in the same directory and run the script to start the brute force process.

